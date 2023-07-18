@@ -8,7 +8,7 @@
         "$className": "DataModel",
         "ServerScriptService": {
             "$className": "ServerScriptService",
-            "server": {
+            "Server": {
                 "$path": "out/server"
             }
         },
@@ -23,15 +23,18 @@
                     }
                 }
             },
-            "core": {
+            "Core": {
                 "$path": "out/shared"
-            }
+            },
+			"Maps": {
+				"$className": "Folder"
+			}
         },
         "StarterPlayer": {
             "$className": "StarterPlayer",
             "StarterPlayerScripts": {
                 "$className": "StarterPlayerScripts",
-                "client": {
+                "Client": {
                     "$path": "out/client"
                 }
             }
