@@ -27,7 +27,13 @@
                 "$path": "out/shared"
             },
 			"Maps": {
-				"$className": "Folder"
+				"$className": "Folder",
+				"Testing": {
+					"$className": "Model",
+					"SpawnPoints": {
+						"$className": "Folder"
+					}
+				}
 			}
         },
         "StarterPlayer": {

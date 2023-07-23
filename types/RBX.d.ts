@@ -11,3 +11,7 @@ declare interface ServerScriptService {
 		};
 	};
 }
+
+declare interface Player {
+	PlayerGui: PlayerGui;
+}

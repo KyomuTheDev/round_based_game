@@ -1,7 +1,5 @@
 local user = {}
 
-local functions = {}
-
 function user.new(player)
 	local self = {
 		Instance = player,

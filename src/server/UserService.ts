@@ -1,4 +1,3 @@
-import { Players } from "@rbxts/services";
 import User from "shared/User";
 
 class UserService {

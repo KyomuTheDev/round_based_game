@@ -5,11 +5,13 @@ import UserService from "server/UserService";
 import { t } from "@rbxts/t";
 import { Gamemodes, GamemodeNames } from "./Gamemodes";
 import { Attributes, AttributeNames } from "./GameAttributes";
-
-const staticMaps = ReplicatedStorage.Maps.GetChildren();
+import SharedTimer from "server/SharedTimer";
 
 const choose = Network.Get("Choose");
 const setTimer = Network.Get("SetTimer");
+const mapChoosen = Network.Get("MapChoosen");
+const gamemodeChoosen = Network.Get("GamemodeChoosen");
+const attributeChoosen = Network.Get("AttributeChoosen");
 
 const random = new Random();
 
@@ -22,8 +24,8 @@ class Game {
 		const choices = new Map<string, number>();
 		const choosables: string[] = [];
 
-		for (const i of $range(1, 3)) {
-			const index = random.NextInteger(1, array.size());
+		for (const _ of $range(1, array.size())) {
+			const index = random.NextInteger(0, array.size() - 1);
 			const name = array[index].Name;
 
 			choosables.push(name);
@@ -48,11 +50,14 @@ class Game {
 					choices.set(choice, (choices.get(choice) as number) + 1);
 					chosenPlayers.push(plr);
 				},
-				() => print(`${plr.Name} did not choose a option.`),
+				() => print(`${plr.Name} did not choose a ${title}.`),
 			);
 		}
 
-		GameSettings.ChoosingTime.Wait();
+		setTimer.SendToAllPlayers(`Choosing ${title}`, GameSettings.ChoosingTime);
+		SharedTimer.setLength(GameSettings.ChoosingTime);
+		SharedTimer.setTitle(`Choosing ${title}`);
+		SharedTimer.runSync();
 
 		let highest = "";
 		let highestScore = -1;
@@ -68,9 +73,11 @@ class Game {
 	}
 
 	ChooseMap() {
-		const maps = table.clone(staticMaps);
+		const maps = ReplicatedStorage.Maps.GetChildren();
 		const [choosableMaps, choices] = this.GetChoices(maps);
 		const choice = this.Choose("map", choosableMaps, choices);
+
+		mapChoosen.SendToAllPlayers(choice);
 
 		this.LoadMap(choice);
 	}
@@ -80,15 +87,19 @@ class Game {
 		const [choosableGamemodes, choices] = this.GetChoices(gamemodes);
 		const choice = this.Choose("gamemode", choosableGamemodes, choices);
 
-		this.LoadGamemode(choice);
+		gamemodeChoosen.SendToAllPlayers(choice);
+
+		this.gamemode = GamemodeNames[choice];
 	}
 
-	ChooseAttributes() {
+	ChooseAttribute() {
 		const attributes = table.clone(Attributes);
 		const [choosableAttributes, choices] = this.GetChoices(attributes);
 		const choice = this.Choose("attribute", choosableAttributes, choices);
 
-		this.LoadAttribute(choice);
+		attributeChoosen.SendToAllPlayers(choice);
+
+		this.atttribute = AttributeNames[choice];
 	}
 
 	LoadMap(map: string) {
@@ -100,12 +111,10 @@ class Game {
 	}
 
 	LoadGamemode(gamemode: string) {
-		this.gamemode = GamemodeNames[gamemode];
 		this.gamemode.Init();
 	}
 
 	LoadAttribute(attribute: string) {
-		this.atttribute = AttributeNames[attribute];
 		this.atttribute.Load();
 	}
 
@@ -125,9 +134,11 @@ class Game {
 	}
 
 	Intermission() {
-		setTimer.SendToAllPlayers("Intermission", GameSettings.IntermissionTime.Time);
+		setTimer.SendToAllPlayers("Intermission", GameSettings.IntermissionTime);
 
-		GameSettings.IntermissionTime.Wait();
+		SharedTimer.setLength(GameSettings.IntermissionTime);
+		SharedTimer.setTitle("Intermission");
+		SharedTimer.runSync();
 	}
 
 	Start() {
@@ -153,11 +164,28 @@ class Game {
 			count++;
 		}
 
-		setTimer.SendToAllPlayers("Starting...", GameSettings.WaitTime.Time);
-		GameSettings.WaitTime.Wait();
+		setTimer.SendToAllPlayers("Starting...", GameSettings.WaitTime);
+		SharedTimer.setLength(GameSettings.WaitTime);
+		SharedTimer.setTitle("Starting...");
+		SharedTimer.runSync();
 
 		for (const part of parts) {
 			part.Anchored = false;
+		}
+
+		this.gamemode.Init();
+		this.atttribute.Load();
+	}
+
+	Stop() {
+		this.gamemode.Deinit();
+		this.atttribute.Unload();
+
+		for (const [plr, _] of UserService.GetUsers()) {
+			const character = plr.Character as { Humanoid: Humanoid } | undefined;
+			if (!character) continue;
+
+			character.Humanoid.Health = -1;
 		}
 	}
 }

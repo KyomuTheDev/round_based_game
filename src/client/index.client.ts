@@ -1,1 +1,0 @@
-export = "Fuck you";

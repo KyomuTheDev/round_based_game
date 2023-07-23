@@ -1,20 +1,8 @@
-class WaitTime {
-	Time: number;
-
-	Wait() {
-		task.wait(this.Time);
-	}
-
-	constructor(time: number) {
-		this.Time = time;
-	}
-}
-
 class GameSettings {
-	public static IntermissionTime = new WaitTime(15);
-	public static RoundTime = new WaitTime(180);
-	public static ChoosingTime = new WaitTime(15);
-	public static WaitTime = new WaitTime(5);
+	public static IntermissionTime = 15;
+	public static RoundTime = 180;
+	public static ChoosingTime = 15;
+	public static WaitTime = 5;
 	public static MaxRounds = 3;
 }
 
